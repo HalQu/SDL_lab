@@ -1,0 +1,23 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "E:\\SDL2_MinGW\\SDL2-2.32.8\\x86_64-w64-mingw32\\include",
+                "E:\\SDL2_MinGW\\SDL2_ttf-2.24.0\\x86_64-w64-mingw32\\include",
+                "E:\\SDL2_MinGW\\SDL2_mixer-2.8.1\\x86_64-w64-mingw32\\include",
+                "E:\\SDL2_MinGW\\SDL2_image-2.8.8\\x86_64-w64-mingw32\\include"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "cStandard": "c17",
+            "cppStandard": "gnu++17",
+            "intelliSenseMode": "windows-gcc-x64"
+        }
+    ],
+    "version": 4
+}
