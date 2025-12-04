@@ -3,39 +3,73 @@
 #include <cmath>
 
 Point2D Point3D::To2D(const Camera& camera) {
-    // 转换到相对摄像机坐标系
-    Point3D relativePos(
-        (x - camera.getPosition().getX()) * camera.get_TxG().x +
-        (y - camera.getPosition().getY()) * camera.get_TxG().y +
-        (z - camera.getPosition().getZ()) * camera.get_TxG().z,
-        (x - camera.getPosition().getX()) * camera.get_Up().x +
-        (y - camera.getPosition().getY()) * camera.get_Up().y +
-        (z - camera.getPosition().getZ()) * camera.get_Up().z,
-        (x - camera.getPosition().getX()) * camera.get_Direction().x +
-        (y - camera.getPosition().getY()) * camera.get_Direction().y +
-        (z - camera.getPosition().getZ()) * camera.get_Direction().z
-    );
+    auto camPos = camera.getPosition();
+    auto forward = camera.get_Direction();
+    auto up = camera.get_Up();
+    auto right = camera.get_TxG();
+
+    float dx = x - camPos.getX();
+    float dy = y - camPos.getY();
+    float dz = z - camPos.getZ();
+
+    float cz = dx*forward.x + dy*forward.y + dz*forward.z;
+    float cx = dx*right.x   + dy*right.y   + dz*right.z;
+    float cy = dx*up.x      + dy*up.y      + dz*up.z;
+
+    float nearC = camera.getNearClip();
+    float farC  = camera.getFarClip();
+    // 点在相机前方并在裁剪范围内才可见（cz>near_clip 且 cz<far_clip）
+    if (cz <= nearC || cz >= farC) return Point2D(-1e6f, -1e6f);
+
+    // 使用垂直 FOV 计算 fy，然后 fx = fy / aspect（不要乘）
+    float fovY = camera.getFOV(); // 垂直 FOV（弧度）
+    float fy = 1.0f / std::tan(fovY * 0.5f);
+    float fx = fy / camera.getAspectRatio(); // 正确计算 fx
+
+    float ndc_x = (cx * fx) / cz;
+    float ndc_y = (cy * fy) / cz;
+
+    // 将标准化设备坐标映射到屏幕（NDC 默认 -1..1）
+    float sx = (ndc_x * 0.5f + 0.5f) * SCREEN_WIDTH;
+    float sy = (-ndc_y * 0.5f + 0.5f) * SCREEN_HEIGHT; // 翻转 Y
+
+    return Point2D(sx, sy);
+}
+Point2D Point3D::To2D_forback(const Camera& camera) {
+    auto camPos = camera.getPosition();
+    auto forward = camera.get_Direction();
+    auto up = camera.get_Up();
+    auto right = camera.get_TxG();
+
+    float nearC = camera.getNearClip();
+    float farC  = camera.getFarClip();
 
     
 
-    // 透视投影计算
-    float nearClip = camera.getNearClip();
-    float farClip = camera.getFarClip();
+    float dx = x - camPos.getX();
+    float dy = y - camPos.getY();
+    float dz = z - camPos.getZ();
 
-    if(relativePos.z <= nearClip|| relativePos.z >= farClip) {
-        return Point2D(592778,592778); // 返回592778
-    }
+    float cz = dx*forward.x + dy*forward.y + dz*forward.z;
+    float cx = dx*right.x   + dy*right.y   + dz*right.z;
+    float cy = dx*up.x      + dy*up.y      + dz*up.z;
 
-    float aspect = camera.getAspectRatio();
-    float Half_H = tan(camera.getFOV()) * nearClip;
-    float Half_W = Half_H * aspect;
 
-    // 计算投影后的2D坐标
-    Point2D projectedPoint;
-    projectedPoint.x = (relativePos.x * nearClip) / (Half_W * relativePos.z) * SCREEN_WIDTH/2 + SCREEN_WIDTH/2;
-    projectedPoint.y = (relativePos.y * nearClip) / (Half_H * relativePos.z) * SCREEN_HEIGHT/2 + SCREEN_HEIGHT/2;
+    // 使用垂直 FOV 计算 fy，然后 fx = fy / aspect（不要乘）
+    float fovY = camera.getFOV(); // 垂直 FOV（弧度）
+    float fy = 1.0f / std::tan(fovY * 0.5f);
+    float fx = fy / camera.getAspectRatio(); // 正确计算 fx
 
-    return projectedPoint;
+    float ndc_x = (cx * fx) / cz;
+    float ndc_y = (cy * fy) / cz;
+
+    // 将标准化设备坐标映射到屏幕（NDC 默认 -1..1）
+    float sx = (ndc_x * 0.5f + 0.5f) * SCREEN_WIDTH;
+    float sy = (-ndc_y * 0.5f + 0.5f) * SCREEN_HEIGHT; // 翻转 Y
+
+    return Point2D(sx, sy);
 }
+
+
 
 

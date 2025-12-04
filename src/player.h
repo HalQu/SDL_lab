@@ -54,23 +54,17 @@ public:
 
     void update()
     {
-        if(is_turnleft)
-        {
-            float angle = 5.0f * 3.1415926f / 180.0f; // 5度转向角度，转换为弧度
-            float newDirX = direction.x * cos(angle) - direction.z * sin(angle);
-            float newDirZ = direction.x * sin(angle) + direction.z * cos(angle);
-            direction.x = newDirX;
-            direction.z = newDirZ;
+        // 使用球坐标 theta 统一处理左右转向，并保证同步与归一
+        if (is_turnleft) {
+            float angle = -5.0f * PI / 180.0f; // 每帧左转 5°
+            direction.setSpherical(direction.theta + angle, direction.phi);
         }
-        if(is_turnright)
-        {
-            float angle = -5.0f * 3.1415926f / 180.0f; // -5度转向角度，转换为弧度
-            float newDirX = direction.x * cos(angle) - direction.z * sin(angle);
-            float newDirZ = direction.x * sin(angle) + direction.z * cos(angle);
-            direction.x = newDirX;
-            direction.z = newDirZ;
+        if (is_turnright) {
+            float angle = 5.0f * PI / 180.0f; // 每帧右转 5°
+            direction.setSpherical(direction.theta + angle, direction.phi);
         }
-        if(is_walkforward)
+
+        if (is_walkforward)
         {
             position.setX(position.getX()+velocity*direction.x);
             position.setY(position.getY()+velocity*direction.y);

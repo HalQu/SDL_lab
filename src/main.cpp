@@ -8,6 +8,7 @@
 #include "Camera.h"
 #include "config.h"
 #include "player.h"
+#include "grid.h"
 
 int main(int /*argc*/, char* /*argv*/[]) {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -36,14 +37,25 @@ int main(int /*argc*/, char* /*argv*/[]) {
         return 1;
     }
 
+    // 以弧度给定
+float theta_d = 0.0f;
+float phi_d = 0.0f;
+float phi_t = PI/2.0f; // 90度仰视
+direction3D d = direction3D::fromSpherical(theta_d, phi_d);
+direction3D t = direction3D::fromSpherical(theta_d, phi_t);
+// d.x/d.y/d.z 与 d.theta/d.phi 都已正确设置并归一化
+
     // 初始化立方体和摄像机
+
+    Grid grid(25.0f, 41, -50.0f); // 网格大小25，41条线，位于y=-50平面
+
     Cube cube(Point3D(0.0f, 0.0f, 0.0f), 100.0f); // 立方体中心在原点，边长为 100
 
-    Player master(Point3D(0.0f,0.0f,-300.0f),direction3D(0.0f,0.0f,1.0));
+    Player master(Point3D(0.0f,0.0f,-300.0f),d);
 
     Camera camera(Point3D(50.0f, 0.0f, -300.0f),  // 摄像机位置在 z = -500
-                  direction3D(0.0f, 0.0f, 1.0f), // 摄像机朝向 z 轴正方向
-                  direction3D(0.0f, 1.0f, 0.0f), // 摄像机的上方向为 y 轴正方向
+                  d, // 摄像机朝向 z 轴正方向
+                  t, // 摄像机的上方向为 y 轴正方向
                   (float)SCREEN_WIDTH / SCREEN_HEIGHT, 
                   1.4f ,//视野
                   0.1f, //近裁剪面
@@ -86,6 +98,7 @@ int main(int /*argc*/, char* /*argv*/[]) {
 
         // 绘制立方体
         cube.draw(renderer, camera);
+        grid.draw(renderer, camera);
 
 
         SDL_RenderPresent(renderer); // 更新屏幕
